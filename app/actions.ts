@@ -37,28 +37,41 @@ export async function fetchRelevantTracks(
 
   for (const artistName of artistNames) {
     try {
-      // Search for artist
-      const searchData = await spotifyApiRequest(
-        `/search?q=${encodeURIComponent(artistName)}&type=artist`,
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/artist/${artistName}`,
+      );
+
+      if (!response.ok) {
+        console.error(`Error fetching Spotify ID for artist: ${artistName}`);
+        continue;
+      }
+
+      const artistSpotifyID = await response.json();
+
+      if (!artistSpotifyID) {
+        console.warn(`No Spotify ID found for artist: ${artistName}`);
+        continue;
+      }
+
+      const spotifyArtist = await spotifyApiRequest(
+        `/artists/${artistSpotifyID}`,
         "GET",
         accessToken,
       );
 
-      const artistId = searchData.artists.items[0]?.id;
+      const artistId = spotifyArtist?.id;
 
       if (!artistId) {
         console.warn(`No artist found for: ${artistName}`);
         continue;
       }
 
-      // Fetch top tracks
       const topTracksData = await spotifyApiRequest(
         `/artists/${artistId}/top-tracks?market=NL`,
         "GET",
         accessToken,
       );
 
-      // Add track IDs
       const artistTrackIds = topTracksData.tracks.map((track: any) => track.id);
       trackIds.push(...artistTrackIds);
     } catch (error) {
@@ -66,7 +79,7 @@ export async function fetchRelevantTracks(
     }
   }
 
-  return trackIds; // Return all track IDs
+  return trackIds;
 }
 
 // Playlist aanmaken

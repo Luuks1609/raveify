@@ -569,6 +569,10 @@ export default async function EventPage({
   const artists = data.performances_plans.flatMap((p: any) => p.artists);
   const artistNames = artists.map((artist: any) => artist.name);
 
+  const artists_url_extensions = artists.map(
+    (artist: Artist) => artist.url_extension,
+  );
+
   return (
     <div className="">
       <Navbar
@@ -588,7 +592,7 @@ export default async function EventPage({
         />
         <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-full bg-gradient-to-t from-background to-transparent"></div>
         <div className="absolute left-1/2 top-1/2 mt-5 w-full -translate-x-1/2 -translate-y-1/2 transform px-5">
-          <p className="px-5 text-center text-3xl font-black leading-9 drop-shadow">
+          <p className="px-5 text-center text-3xl font-black leading-9 drop-shadow invert-0">
             {data.name}
           </p>
           <ul className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -609,7 +613,7 @@ export default async function EventPage({
           <CreatePlaylist
             name={data.name}
             description={`Playlist by Raveify`}
-            artistNames={artistNames}
+            artistNames={artists_url_extensions}
           />
         </div>
         <div className="flex flex-col gap-3">

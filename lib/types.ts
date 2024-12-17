@@ -37,4 +37,5 @@ export interface Artist {
   name: string;
   photo: string;
   music_styles: string[];
+  url_extension: string;
 }

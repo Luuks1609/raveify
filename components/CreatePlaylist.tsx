@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { getSession } from "next-auth/react";
 import { useState } from "react";
-import { Progress } from "@/components/ui/progress";
-import { AlbumIcon, CheckIcon } from "lucide-react";
+import { CheckIcon } from "lucide-react";
+import { RiLoader5Fill } from "@remixicon/react";
 
 export default function CreatePlaylist({
   name,
@@ -31,8 +31,6 @@ export default function CreatePlaylist({
 }) {
   const [loading, setLoading] = useState(false);
   const [playlistCreated, setPlaylistCreated] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [previewTracks, setPreviewTracks] = useState<string[]>([]);
   const [playlistUri, setPlaylistUri] = useState<string | null>(null);
 
   async function createPlaylist() {
@@ -51,14 +49,7 @@ export default function CreatePlaylist({
     try {
       const userId = await fetchSpotifyUserId(accessToken);
 
-      // Simuleer progress-indicator
-      setProgress(25);
-
       const trackIds = await fetchRelevantTracks(accessToken, artistNames);
-
-      // Update de preview met de eerste paar tracks
-      setPreviewTracks(trackIds.slice(0, 5)); // Toon de eerste 5 tracks
-      setProgress(75);
 
       const { playlistId, playlistUri } = await generatePlaylist(
         name,
@@ -71,7 +62,6 @@ export default function CreatePlaylist({
       console.log(`Playlist created with ID: ${playlistId}`);
       setPlaylistCreated(true);
       setPlaylistUri(playlistUri);
-      setProgress(100);
     } catch (error) {
       console.error("Error creating playlist:", error);
     } finally {
@@ -82,7 +72,7 @@ export default function CreatePlaylist({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="w-full rounded bg-brand py-7 text-white hover:bg-red-600">
+        <Button variant={"brand"} className="w-full rounded py-7">
           Create playlist
         </Button>
       </DialogTrigger>
@@ -97,64 +87,48 @@ export default function CreatePlaylist({
         </DialogHeader>
 
         {!playlistCreated && loading && (
-          <div className="space-y-4">
-            {/* Progress-indicator */}
-            <Progress value={progress} className="w-full" />
-            <p className="text-sm text-gray-500">
-              {progress < 100
-                ? "Fetching tracks and building your playlist..."
-                : "Finalizing the playlist!"}
-            </p>
-
-            {/* Preview van tracks */}
-            {previewTracks.length > 0 && (
-              <div>
-                <p className="text-sm font-semibold">Preview of tracks:</p>
-                <ul className="space-y-2">
-                  {previewTracks.map((track, index) => (
-                    <li key={index} className="flex items-center space-x-2">
-                      <AlbumIcon className="size-5 text-muted-foreground" />
-                      <span>{track}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Succesmelding en opties na creatie */}
-        {playlistCreated && (
-          <div className="space-y-4">
-            <p className="flex items-center space-x-2 text-lg font-bold text-green-600">
-              <CheckIcon className="size-5" />
-              <span>Playlist successfully created!</span>
-            </p>
-
-            <div className="flex flex-col space-y-2">
-              <Button
-                asChild
-                className="rounded bg-green-500 text-white hover:bg-green-600"
-              >
-                <a
-                  href={playlistUri!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Open on Spotify
-                </a>
-              </Button>
-              <Button className="rounded bg-blue-500 text-white hover:bg-blue-600">
-                Share on Social Media
-              </Button>
-            </div>
+          // loading state here
+          <div className="flex justify-center">
+            <RiLoader5Fill className="size-6 animate-spin" />
           </div>
         )}
 
         {/* Footer-knop */}
         <DialogFooter>
+          {/* Succesmelding en opties na creatie */}
+          {playlistCreated && (
+            <div className="space-y-4">
+              <p className="flex items-center justify-center space-x-2 text-center text-lg font-bold text-white">
+                <CheckIcon className="size-5 text-green-500" />
+                <span className="text-center">
+                  Playlist successfully created!
+                </span>
+              </p>
+
+              <div className="flex flex-col space-y-2">
+                <Button
+                  asChild
+                  className="rounded bg-brand text-white hover:bg-green-600"
+                >
+                  <a
+                    href={playlistUri!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Open on Spotify
+                  </a>
+                </Button>
+              </div>
+            </div>
+          )}
+
           {!playlistCreated && (
-            <Button type="submit" onClick={createPlaylist} disabled={loading}>
+            <Button
+              type="submit"
+              variant={"brand"}
+              onClick={createPlaylist}
+              disabled={loading}
+            >
               {loading ? "Creating..." : "Start creating playlist"}
             </Button>
           )}
