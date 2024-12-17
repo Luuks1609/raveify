@@ -19,16 +19,15 @@ import { getSession } from "next-auth/react";
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { AlbumIcon, CheckIcon } from "lucide-react";
-import { Artist } from "@/lib/types";
 
 export default function CreatePlaylist({
   name,
   description,
-  artists,
+  artistNames,
 }: {
   name: string;
   description: string;
-  artists: Artist[];
+  artistNames: string[];
 }) {
   const [loading, setLoading] = useState(false);
   const [playlistCreated, setPlaylistCreated] = useState(false);
@@ -55,7 +54,7 @@ export default function CreatePlaylist({
       // Simuleer progress-indicator
       setProgress(25);
 
-      const trackIds = await fetchRelevantTracks(accessToken, artists);
+      const trackIds = await fetchRelevantTracks(accessToken, artistNames);
 
       // Update de preview met de eerste paar tracks
       setPreviewTracks(trackIds.slice(0, 5)); // Toon de eerste 5 tracks
@@ -69,6 +68,7 @@ export default function CreatePlaylist({
         accessToken,
       );
 
+      console.log(`Playlist created with ID: ${playlistId}`);
       setPlaylistCreated(true);
       setPlaylistUri(playlistUri);
       setProgress(100);

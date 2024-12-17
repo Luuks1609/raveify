@@ -609,7 +609,7 @@ export default async function EventPage({
           <CreatePlaylist
             name={data.name}
             description={`Playlist by Raveify`}
-            artists={artists}
+            artistNames={artistNames}
           />
         </div>
         <div className="flex flex-col gap-3">
