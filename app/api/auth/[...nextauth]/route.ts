@@ -28,7 +28,7 @@ async function refreshAccessToken(token: any) {
       Authorization:
         "Basic " +
         Buffer.from(
-          process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_SECRET
+          process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_SECRET,
         ).toString("base64"),
     },
     body: params,
@@ -63,18 +63,16 @@ const options: NextAuthOptions = {
         token.accessTokenExpires = account.expires_at;
         return token;
       }
-      // access token has not expired
-      if (
-        token.accessTokenExpires &&
-        Date.now() < token.accessTokenExpires * 1000
-      ) {
+
+      // Return previous token if the access token has not expired yet
+      if (Date.now() < token.accessTokenExpires) {
         return token;
       }
 
       // access token has expired
       return await refreshAccessToken(token);
     },
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       // Send properties to the client, like an access_token from a provider.
       session.accessToken = token.accessToken;
       return session;
