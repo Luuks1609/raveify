@@ -10,7 +10,7 @@ export async function GET(
 
   try {
     const artistDetails = await fetch(
-      `https://api.beappic.com/rest-api/v1/community/pages/${url_extension}`,
+      `${process.env.DATA_API_ENDPOINT}/rest-api/v1/community/pages/${url_extension}`,
     );
 
     console.log("hallo?");
