@@ -1,5 +1,7 @@
 "use server";
 
+import { getServerSession } from "next-auth";
+
 const SPOTIFY_BASE_URL = "https://api.spotify.com/v1";
 
 // Helper: Spotify API Request
@@ -39,6 +41,11 @@ export async function fetchRelevantTracks(
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/artist/${artistName}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
       );
 
       if (!response.ok) {

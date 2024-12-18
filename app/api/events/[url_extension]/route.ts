@@ -19,14 +19,14 @@ export async function GET(
     );
   }
 
-  const cacheKey = `event-${url_extension}`; // Unieke cache key per event
+  const cacheKey = `event-${url_extension}`; // Unique cache key per event
 
   try {
     const cachedData = await redis.get(cacheKey);
 
     if (cachedData) {
       console.log("Serving from cache");
-      return NextResponse.json(JSON.parse(cachedData as string), {
+      return NextResponse.json(cachedData, {
         status: 200,
       });
     }

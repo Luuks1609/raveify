@@ -1,6 +1,15 @@
 import { getServerSession } from "next-auth";
 import { NextRequest } from "next/server";
 
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// Create a new ratelimiter, that allows 10 requests per 5 seconds
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, "5 s"),
+});
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession();
@@ -11,6 +20,11 @@ export async function POST(request: NextRequest) {
         headers: { "Content-Type": "application/json" },
       });
     }
+
+    const identifier = session.user!.email!;
+    const { success } = await ratelimit.limit(identifier);
+
+    if (!success) return "Unable to process at this time";
 
     const { query } = await request.json();
     const formattedQuery = encodeURIComponent(query.trim());
