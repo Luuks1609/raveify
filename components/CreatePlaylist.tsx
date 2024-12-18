@@ -97,7 +97,7 @@ export default function CreatePlaylist({
         <DialogFooter>
           {/* Succesmelding en opties na creatie */}
           {playlistCreated && (
-            <div className="space-y-4">
+            <div className="w-full space-y-4">
               <p className="flex items-center justify-center space-x-2 text-center text-lg font-bold text-white">
                 <CheckIcon className="size-5 text-green-500" />
                 <span className="text-center">
@@ -125,6 +125,7 @@ export default function CreatePlaylist({
           {!playlistCreated && (
             <Button
               type="submit"
+              className="w-full"
               variant={"brand"}
               onClick={createPlaylist}
               disabled={loading}

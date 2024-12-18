@@ -2,7 +2,7 @@ import CreatePlaylist from "@/components/CreatePlaylist";
 import { MaxWidthWrapper } from "@/components/MaxWidthWrapper";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { Artist } from "@/lib/types";
+import { Artist, Event } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { Calendar, ChevronLeft, House, Pin } from "lucide-react";
 
@@ -525,7 +525,7 @@ const sampleResponse = {
   ],
 };
 
-async function fetchEvent(url_extension: string) {
+async function fetchEvent(url_extension: string): Promise<Event> {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/events/${url_extension}`,
   );
@@ -566,8 +566,15 @@ export default async function EventPage({
     },
   ];
 
-  const artists = data.performances_plans.flatMap((p: any) => p.artists);
-  const artistNames = artists.map((artist: any) => artist.name);
+  let artists: Artist[] = data.performances_plans.flatMap(
+    (p: any) => p.artists,
+  );
+
+  if (artists.length === 0 && data.performances) {
+    artists = data.performances.areas.flatMap((area) =>
+      area.performances.flatMap((p: any) => p.artists),
+    );
+  }
 
   const artists_url_extensions = artists.map(
     (artist: Artist) => artist.url_extension,
@@ -617,33 +624,36 @@ export default async function EventPage({
           />
         </div>
         <div className="flex flex-col gap-3">
-          {artists.map((artist: Artist) => (
-            <div
-              key={artist.id}
-              className="flex items-center gap-3 rounded bg-secondary p-4"
-            >
-              {artist.photo && (
-                <img
-                  src={artist.photo}
-                  className="size-10 rounded-full"
-                  alt=""
-                />
-              )}
-              <div className="flex flex-col">
-                <p>{artist.name}</p>
-                <p className="text-xs capitalize text-muted-foreground">
-                  {artist.music_styles
-                    .map((m: string) => m)
-                    .join(", ")
-                    .replaceAll("music_", "")}
-                </p>
+          {artists.length > 0 ? (
+            artists.map((artist: Artist) => (
+              <div
+                key={artist.id}
+                className="flex items-center gap-3 rounded bg-secondary p-4"
+              >
+                {artist.photo && (
+                  <img
+                    src={artist.photo}
+                    className="size-10 rounded-full"
+                    alt=""
+                  />
+                )}
+                <div className="flex flex-col">
+                  <p>{artist.name}</p>
+                  <p className="text-xs capitalize text-muted-foreground">
+                    {artist.music_styles
+                      .map((m: string) => m)
+                      .join(", ")
+                      .replaceAll("music_", "")}
+                  </p>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center text-muted-foreground">
+              No lineup available
             </div>
-          ))}
+          )}
         </div>
-        {/* <div className="flex flex-wrap text-center">
-          {data.performances_plans.map((p) => p.name).join(" · ")}
-        </div> */}
       </MaxWidthWrapper>
     </div>
   );

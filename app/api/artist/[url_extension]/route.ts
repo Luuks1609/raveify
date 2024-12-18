@@ -13,8 +13,6 @@ export async function GET(
       `${process.env.DATA_API_ENDPOINT}/rest-api/v1/community/pages/${url_extension}`,
     );
 
-    console.log("hallo?");
-
     if (!artistDetails.ok) {
       return NextResponse.json(
         { error: "Artist not found" },
@@ -23,10 +21,14 @@ export async function GET(
     }
 
     const data = await artistDetails.json();
-    const { spotify } = data;
-    const spotifyId = spotify.split("/").pop();
-
-    return NextResponse.json(spotifyId);
+    if (data && data.spotify) {
+      return NextResponse.json(data.spotify.split("/").pop());
+    } else {
+      return NextResponse.json(
+        { error: "Spotify ID not found" },
+        { status: 404 },
+      );
+    }
   } catch (error) {
     console.error("Error fetching artist:", error);
     return NextResponse.json(
