@@ -10,7 +10,7 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(10, "5 s"),
 });
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
   try {
     const session = await getServerSession();
 
@@ -24,7 +24,15 @@ export async function POST(request: NextRequest) {
     const identifier = session.user!.email!;
     const { success } = await ratelimit.limit(identifier);
 
-    if (!success) return "Unable to process at this time";
+    if (!success) {
+      return new Response(
+        JSON.stringify({ error: "Unable to process at this time" }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
 
     const { query } = await request.json();
     const formattedQuery = encodeURIComponent(query.trim());
