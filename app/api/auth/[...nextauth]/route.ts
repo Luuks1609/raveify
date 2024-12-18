@@ -65,7 +65,10 @@ const options: NextAuthOptions = {
       }
 
       // Return previous token if the access token has not expired yet
-      if (Date.now() < token.accessTokenExpires) {
+      if (
+        typeof token.accessTokenExpires === "number" &&
+        Date.now() < token.accessTokenExpires
+      ) {
         return token;
       }
 
@@ -73,9 +76,11 @@ const options: NextAuthOptions = {
       return await refreshAccessToken(token);
     },
     async session({ session, token }) {
-      // Send properties to the client, like an access_token from a provider.
-      session.accessToken = token.accessToken;
-      return session;
+      // Extend the session type to include accessToken
+      return {
+        ...session,
+        accessToken: token.accessToken,
+      };
     },
   },
 };
