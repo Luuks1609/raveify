@@ -49,9 +49,8 @@ export async function fetchRelevantTracks(
   const startTime = performance.now(); // Start timing
   const trackIds: string[] = [];
 
-  console.log("trackIds:", trackIds);
-
-  for (const artistName of artistNames) {
+  // Helper om data voor één artiest op te halen
+  const fetchArtistTracks = async (artistName: string) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/artist/${artistName}`,
@@ -62,20 +61,15 @@ export async function fetchRelevantTracks(
         },
       );
 
-      console.log({ response });
-
       if (!response.ok) {
         console.error(`Error fetching Spotify ID for artist: ${artistName}`);
-        continue;
+        return [];
       }
 
       const artistSpotifyID = await response.json();
-
-      console.log({ artistSpotifyID });
-
       if (!artistSpotifyID) {
         console.warn(`No Spotify ID found for artist: ${artistName}`);
-        continue;
+        return [];
       }
 
       const spotifyArtist = await spotifyApiRequest(
@@ -84,16 +78,11 @@ export async function fetchRelevantTracks(
         accessToken,
       );
 
-      console.log({ spotifyArtist });
-
       const artistId = spotifyArtist?.id;
-
       if (!artistId) {
         console.warn(`No artist found for: ${artistName}`);
-        continue;
+        return [];
       }
-
-      console.log({ artistId });
 
       const topTracksData = await spotifyApiRequest(
         `/artists/${artistId}/top-tracks?market=NL`,
@@ -101,14 +90,20 @@ export async function fetchRelevantTracks(
         accessToken,
       );
 
-      console.log({ topTracksData });
-
-      const artistTrackIds = topTracksData.tracks.map((track: any) => track.id);
-      trackIds.push(...artistTrackIds);
+      return topTracksData.tracks.map((track: any) => track.id);
     } catch (error) {
       console.error(`Error processing artist: ${artistName}`, error);
+      return [];
     }
-  }
+  };
+
+  // Paralleliseer de artiestaanroepen
+  const results = await Promise.all(
+    artistNames.map((artistName) => fetchArtistTracks(artistName)),
+  );
+
+  // Combineer alle track-IDs
+  results.forEach((artistTrackIds) => trackIds.push(...artistTrackIds));
 
   const endTime = performance.now(); // End timing
   console.log(
