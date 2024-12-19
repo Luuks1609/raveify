@@ -118,6 +118,7 @@ export const addTracksToPlaylist = async (
 ) => {
   // Splits track-IDs in batches van 100
   const batches = [];
+  console.log({ trackIds });
   for (let i = 0; i < trackIds.length; i += 100) {
     batches.push(trackIds.slice(i, i + 100));
   }
@@ -141,6 +142,7 @@ export const generatePlaylist = async (
 ) => {
   try {
     const playlist = await createPlaylist(name, description, userId, token);
+    console.log({ playlist });
     await addTracksToPlaylist(playlist.id, trackIds, token);
 
     // Retourneer zowel de ID als de URI
