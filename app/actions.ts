@@ -11,6 +11,7 @@ const spotifyApiRequest = async (
   token: string,
   body: any = null,
 ) => {
+  const startTime = performance.now(); // Start timing
   const response = await fetch(`${SPOTIFY_BASE_URL}${url}`, {
     method,
     headers: {
@@ -19,6 +20,11 @@ const spotifyApiRequest = async (
     },
     body: body ? JSON.stringify(body) : null,
   });
+  const endTime = performance.now(); // End timing
+  console.log(
+    `spotifyApiRequest duration: ${endTime - startTime} milliseconds`,
+  );
+
   if (!response.ok) {
     throw new Error(`Spotify API error: ${response.statusText}`);
   }
@@ -27,7 +33,12 @@ const spotifyApiRequest = async (
 
 // Helper: Fetch Spotify User ID
 export const fetchSpotifyUserId = async (token: string) => {
+  const startTime = performance.now(); // Start timing
   const response = await spotifyApiRequest("/me", "GET", token);
+  const endTime = performance.now(); // End timing
+  console.log(
+    `fetchSpotifyUserId duration: ${endTime - startTime} milliseconds`,
+  );
   return response.id; // Return the user ID
 };
 
@@ -35,6 +46,7 @@ export async function fetchRelevantTracks(
   accessToken: string,
   artistNames: string[],
 ) {
+  const startTime = performance.now(); // Start timing
   const trackIds: string[] = [];
 
   console.log("trackIds:", trackIds);
@@ -98,6 +110,10 @@ export async function fetchRelevantTracks(
     }
   }
 
+  const endTime = performance.now(); // End timing
+  console.log(
+    `fetchRelevantTracks duration: ${endTime - startTime} milliseconds`,
+  );
   return trackIds;
 }
 
@@ -108,6 +124,7 @@ export const createPlaylist = async (
   userId: string,
   token: string,
 ) => {
+  const startTime = performance.now(); // Start timing
   const data = {
     name,
     description,
@@ -119,6 +136,8 @@ export const createPlaylist = async (
     token,
     data,
   );
+  const endTime = performance.now(); // End timing
+  console.log(`createPlaylist duration: ${endTime - startTime} milliseconds`);
   return playlist;
 };
 
@@ -128,6 +147,7 @@ export const addTracksToPlaylist = async (
   trackIds: string[],
   token: string,
 ) => {
+  const startTime = performance.now(); // Start timing
   if (!Array.isArray(trackIds) || trackIds.length === 0) {
     console.error("No track IDs provided or trackIds is not an array");
     return;
@@ -147,6 +167,10 @@ export const addTracksToPlaylist = async (
       uris,
     });
   }
+  const endTime = performance.now(); // End timing
+  console.log(
+    `addTracksToPlaylist duration: ${endTime - startTime} milliseconds`,
+  );
 };
 
 // Hoofdlogica om alles samen te brengen
@@ -157,12 +181,17 @@ export const generatePlaylist = async (
   trackIds: string[],
   token: string,
 ) => {
+  const startTime = performance.now(); // Start timing
   try {
     const playlist = await createPlaylist(name, description, userId, token);
     console.log({ playlist });
     await addTracksToPlaylist(playlist.id, trackIds, token);
 
     // Retourneer zowel de ID als de URI
+    const endTime = performance.now(); // End timing
+    console.log(
+      `generatePlaylist duration: ${endTime - startTime} milliseconds`,
+    );
     return {
       playlistId: playlist.id,
       playlistUri: playlist.uri,

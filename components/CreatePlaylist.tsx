@@ -51,16 +51,26 @@ export default function CreatePlaylist({
 
       console.log("Artist names:", artistNames);
 
+      const fetchTracksStartTime = performance.now(); // Start timing fetchRelevantTracks
       const trackIds = await fetchRelevantTracks(accessToken, artistNames);
+      const fetchTracksEndTime = performance.now(); // End timing fetchRelevantTracks
+      console.log(
+        `fetchRelevantTracks method duration: ${fetchTracksEndTime - fetchTracksStartTime} milliseconds`,
+      );
 
       console.log("Fetched Track IDs:", trackIds); // Debugging log
 
+      const generatePlaylistStartTime = performance.now(); // Start timing generatePlaylist
       const { playlistId, playlistUri } = await generatePlaylist(
         name,
         description,
         userId,
         trackIds,
         accessToken,
+      );
+      const generatePlaylistEndTime = performance.now(); // End timing generatePlaylist
+      console.log(
+        `generatePlaylist method duration: ${generatePlaylistEndTime - generatePlaylistStartTime} milliseconds`,
       );
 
       console.log(`Playlist created with ID: ${playlistId}`);
