@@ -8,6 +8,11 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(200, "60 s"),
 });
 
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL as string,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN as string,
+});
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ url_extension: string }> },
@@ -30,9 +35,18 @@ export async function GET(
     );
   }
 
-  // This api route calls the endpoint to fetch an artist. And returns the spotify ID.
+  const cacheKey = `artist-${url_extension}`; // Unique cache key per artist
 
   try {
+    const cachedData = await redis.get(cacheKey);
+
+    if (cachedData) {
+      console.log("Serving from cache");
+      return NextResponse.json(cachedData, {
+        status: 200,
+      });
+    }
+
     const artistDetails = await fetch(
       `${process.env.DATA_API_ENDPOINT}/rest-api/v1/community/pages/${url_extension}`,
     );
@@ -46,8 +60,10 @@ export async function GET(
 
     const data = await artistDetails.json();
     if (data && data.spotify) {
-      console.log(data.spotify);
-      return NextResponse.json(data.spotify.split("/").pop());
+      const spotifyId = data.spotify.split("/").pop();
+      await redis.set(cacheKey, JSON.stringify(spotifyId));
+      console.log("Serving from API and caching result");
+      return NextResponse.json(spotifyId);
     } else {
       return NextResponse.json(
         { error: "Spotify ID not found" },
