@@ -20,58 +20,6 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { useState, useEffect } from "react";
 import { SearchResultEvent } from "@/lib/types";
-import { CommandLoading } from "cmdk";
-
-const sampleResponse: SearchResultEvent[] = [
-  {
-    id: 217624,
-    name: "Rotterdam Rave 2024 · Winter Special",
-    cover_photo:
-      "https://app2xpr.s3.eu-central-1.amazonaws.com/media/app-images/original/f7ae99ef-0fbd-40c8-af71-acfa678f6926.jpg",
-    start: "2024-12-15 15:00:00",
-    end: "2024-12-15 23:00:00",
-    location: "Maassilo",
-    address: "Rotterdam",
-    is_cancelled: false,
-    url_extension: "rotterdam-rave-2024-winter-special-2024",
-  },
-  {
-    id: 216718,
-    name: "Rotterdam Rave 2025 · Kick Off",
-    cover_photo:
-      "https://app2xpr.s3.eu-central-1.amazonaws.com/media/app-images/original/6f4a1285-b092-4ce5-a98c-724a7dcf6914.jpg",
-    start: "2025-02-15 14:00:00",
-    end: "2025-02-16 00:00:00",
-    location: "Ahoy",
-    address: "Rotterdam",
-    is_cancelled: false,
-    url_extension: "rotterdam-rave-kick-off",
-  },
-  {
-    id: 219089,
-    name: "Rotterdam Rave Afterparty 2025 · Kick-Off",
-    cover_photo:
-      "https://app2xpr.s3.eu-central-1.amazonaws.com/media/app-images/original/94994e85-a96c-4029-94b8-6a761ce368b7.jpg",
-    start: "2025-02-15 23:00:00",
-    end: "2025-02-16 07:00:00",
-    location: "Maassilo",
-    address: "Rotterdam",
-    is_cancelled: false,
-    url_extension: "rotterdam-rave-afterparty-2025-kick-off",
-  },
-  {
-    id: 219391,
-    name: "Rotterdam Rave 2025 · Spring Special",
-    cover_photo:
-      "https://app2xpr.s3.eu-central-1.amazonaws.com/media/app-images/original/5bc4f6f9-7e58-4fcf-9fda-2aa1fd64fc85.jpg",
-    start: "2025-03-29 14:00:00",
-    end: "2025-03-29 23:00:00",
-    location: "Maassilo",
-    address: "Rotterdam",
-    is_cancelled: false,
-    url_extension: "rotterdam-rave-2025-spring-special",
-  },
-];
 
 export default function Searchbar() {
   const [query, setQuery] = useState("");
@@ -107,6 +55,8 @@ export default function Searchbar() {
     }
   }
 
+  console.log(query);
+
   return (
     <>
       <Dialog>
@@ -119,7 +69,7 @@ export default function Searchbar() {
             />
           </Command>
         </DialogTrigger>
-        <DialogContent className="rounded p-0">
+        <DialogContent className="w-[90%] rounded-md p-0 md:w-full">
           <DialogTitle className="sr-only">Search Event</DialogTitle>
           <Command
             shouldFilter={false}
@@ -150,15 +100,17 @@ export default function Searchbar() {
               placeholder="Type the name of an event..."
             />
             <CommandList key={results?.length || 0}>
-              {query && <CommandEmpty>No results found.</CommandEmpty>}
-              <CommandGroup heading="Search results">
-                {results &&
-                  results.map((event) => (
+              {query && results && !loading && (
+                <CommandEmpty>No results found.</CommandEmpty>
+              )}
+              {results && (
+                <CommandGroup heading="Search results">
+                  {results.map((event) => (
                     <a href={`/event/${event.url_extension}`} key={event.id}>
                       <CommandItem>
                         <CalendarHeart />
                         <div>
-                          <p className="text-md font-semibold text-brand">
+                          <p className="text-md font-semibold text-white">
                             {event.name}{" "}
                             <span className="sr-only">{event.start}</span>
                           </p>
@@ -177,7 +129,8 @@ export default function Searchbar() {
                       </CommandItem>
                     </a>
                   ))}
-              </CommandGroup>
+                </CommandGroup>
+              )}
             </CommandList>
           </Command>
         </DialogContent>
