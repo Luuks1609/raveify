@@ -116,14 +116,19 @@ export const addTracksToPlaylist = async (
   trackIds: string[],
   token: string,
 ) => {
-  // Splits track-IDs in batches van 100
+  if (!Array.isArray(trackIds) || trackIds.length === 0) {
+    console.error("No track IDs provided or trackIds is not an array");
+    return;
+  }
+
+  // Splits track-IDs in batches of 100
   const batches = [];
-  console.log({ trackIds });
+  console.log("Track IDs:", trackIds); // Debugging log
   for (let i = 0; i < trackIds.length; i += 100) {
     batches.push(trackIds.slice(i, i + 100));
   }
 
-  // Voeg per batch tracks toe
+  // Add tracks per batch
   for (const batch of batches) {
     const uris = batch.map((id) => `spotify:track:${id}`);
     await spotifyApiRequest(`/playlists/${playlistId}/tracks`, "POST", token, {

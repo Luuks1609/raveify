@@ -46,6 +46,7 @@ export async function GET(
 
     const data = await artistDetails.json();
     if (data && data.spotify) {
+      console.log(data.spotify);
       return NextResponse.json(data.spotify.split("/").pop());
     } else {
       return NextResponse.json(

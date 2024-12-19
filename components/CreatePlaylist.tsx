@@ -51,6 +51,8 @@ export default function CreatePlaylist({
 
       const trackIds = await fetchRelevantTracks(accessToken, artistNames);
 
+      console.log("Fetched Track IDs:", trackIds); // Debugging log
+
       const { playlistId, playlistUri } = await generatePlaylist(
         name,
         description,
