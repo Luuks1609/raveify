@@ -83,6 +83,8 @@ export default async function EventPage({
     (artist: Artist) => artist.url_extension,
   );
 
+  console.log({ artists_url_extensions });
+
   return (
     <div className="">
       <Navbar

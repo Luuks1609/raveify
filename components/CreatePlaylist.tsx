@@ -49,6 +49,8 @@ export default function CreatePlaylist({
     try {
       const userId = await fetchSpotifyUserId(accessToken);
 
+      console.log("Artist names:", artistNames);
+
       const trackIds = await fetchRelevantTracks(accessToken, artistNames);
 
       console.log("Fetched Track IDs:", trackIds); // Debugging log

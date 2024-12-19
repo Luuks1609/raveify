@@ -35,7 +35,9 @@ export async function fetchRelevantTracks(
   accessToken: string,
   artistNames: string[],
 ) {
-  const trackIds = [];
+  const trackIds: string[] = [];
+
+  console.log("trackIds:", trackIds);
 
   for (const artistName of artistNames) {
     try {
@@ -48,12 +50,16 @@ export async function fetchRelevantTracks(
         },
       );
 
+      console.log({ response });
+
       if (!response.ok) {
         console.error(`Error fetching Spotify ID for artist: ${artistName}`);
         continue;
       }
 
       const artistSpotifyID = await response.json();
+
+      console.log({ artistSpotifyID });
 
       if (!artistSpotifyID) {
         console.warn(`No Spotify ID found for artist: ${artistName}`);
@@ -66,6 +72,8 @@ export async function fetchRelevantTracks(
         accessToken,
       );
 
+      console.log({ spotifyArtist });
+
       const artistId = spotifyArtist?.id;
 
       if (!artistId) {
@@ -73,11 +81,15 @@ export async function fetchRelevantTracks(
         continue;
       }
 
+      console.log({ artistId });
+
       const topTracksData = await spotifyApiRequest(
         `/artists/${artistId}/top-tracks?market=NL`,
         "GET",
         accessToken,
       );
+
+      console.log({ topTracksData });
 
       const artistTrackIds = topTracksData.tracks.map((track: any) => track.id);
       trackIds.push(...artistTrackIds);
