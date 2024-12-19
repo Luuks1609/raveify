@@ -124,6 +124,7 @@ export default async function EventPage({
             name={data.name}
             description={`Playlist by Raveify`}
             artistNames={artists_url_extensions}
+            coverImage={data.photo}
           />
         </div>
         <div className="flex flex-col gap-3">

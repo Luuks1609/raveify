@@ -8,6 +8,9 @@ const scopes = [
   "playlist-read-collaborative",
   "user-read-currently-playing",
   "user-modify-playback-state",
+  "ugc-image-upload",
+  "playlist-modify-public",
+  "playlist-modify-private",
 ].join(",");
 
 const params = {

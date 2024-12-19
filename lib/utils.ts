@@ -16,4 +16,12 @@ export function formatDate(date: string): string {
   return new Intl.DateTimeFormat("nl-NL", options).format(new Date(date));
 }
 
+export async function fetchImageAsBase64(imageUrl: string): Promise<string> {
+  const response = await fetch(imageUrl);
+  const blob = await response.blob();
+  const arrayBuffer = await blob.arrayBuffer();
+  const base64String = Buffer.from(arrayBuffer).toString("base64");
+  return base64String;
+}
+
 export const APP_NAME = "Raveify";

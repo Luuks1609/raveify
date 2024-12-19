@@ -56,7 +56,7 @@ export default function Navbar({ actionItem }: Props) {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-4 mt-2">
-              <DropdownMenuLabel>Hi! {session.user?.name}</DropdownMenuLabel>
+              <DropdownMenuLabel>Hi {session.user?.name}!</DropdownMenuLabel>
               <DropdownMenuSeparator />
 
               <DropdownMenuItem>

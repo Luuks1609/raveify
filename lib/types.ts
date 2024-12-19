@@ -1,3 +1,5 @@
+import { URL } from "url";
+
 export interface SearchResultEvent {
   id: number;
   url_extension: string;

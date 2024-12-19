@@ -19,15 +19,18 @@ import { getSession } from "next-auth/react";
 import { useState } from "react";
 import { CheckIcon } from "lucide-react";
 import { RiLoader5Fill } from "@remixicon/react";
+import { URL } from "url";
 
 export default function CreatePlaylist({
   name,
   description,
   artistNames,
+  coverImage,
 }: {
   name: string;
   description: string;
   artistNames: string[];
+  coverImage: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [playlistCreated, setPlaylistCreated] = useState(false);
@@ -54,6 +57,7 @@ export default function CreatePlaylist({
       const { playlistId, playlistUri } = await generatePlaylist(
         name,
         description,
+        coverImage,
         userId,
         trackIds,
         accessToken,

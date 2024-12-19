@@ -1,5 +1,7 @@
 "use server";
 
+import { fetchImageAsBase64 } from "@/lib/utils";
+
 const SPOTIFY_BASE_URL = "https://api.spotify.com/v1";
 
 // Helper: Spotify API Request
@@ -24,7 +26,30 @@ const spotifyApiRequest = async (
   return await response.json();
 };
 
-// Helper: Fetch Spotify User ID
+export const uploadPlaylistCoverImage = async (
+  playlistId: string,
+  base64Image: string,
+  token: string,
+) => {
+  const url = `/playlists/${playlistId}/images`;
+
+  // Verstuur de Base64-afbeelding
+  const response = await fetch(`${SPOTIFY_BASE_URL}${url}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "image/jpeg", // Zorg dat de afbeelding een JPEG is
+    },
+    body: base64Image,
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Fout bij het uploaden van de playlist-afbeelding: ${response.statusText}`,
+    );
+  }
+};
+
 export const fetchSpotifyUserId = async (token: string) => {
   const response = await spotifyApiRequest("/me", "GET", token);
   return response.id; // Return the user ID
@@ -146,6 +171,7 @@ export const addTracksToPlaylist = async (
 export const generatePlaylist = async (
   name: string,
   description: string,
+  coverImage: string,
   userId: string,
   trackIds: string[],
   token: string,
@@ -153,6 +179,11 @@ export const generatePlaylist = async (
   try {
     const playlist = await createPlaylist(name, description, userId, token);
     await addTracksToPlaylist(playlist.id, trackIds, token);
+
+    if (coverImage) {
+      const base64Image = await fetchImageAsBase64(coverImage);
+      await uploadPlaylistCoverImage(playlist.id, base64Image, token);
+    }
 
     // Retourneer zowel de ID als de URI
     return {
