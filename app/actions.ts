@@ -61,8 +61,37 @@ export async function fetchRelevantTracks(
 ) {
   const trackIds: string[] = [];
 
-  // Helper om data voor één artiest op te halen
-  const fetchArtistTracks = async (artistName: string) => {
+  // Helper om data voor meerdere artiesten op te halen
+  const fetchArtistsTracks = async (artistIds: string[]) => {
+    try {
+      const ids = artistIds.join(",");
+      const spotifyArtists = await spotifyApiRequest(
+        `/artists?ids=${ids}`,
+        "GET",
+        accessToken,
+      );
+
+      const topTracksPromises = spotifyArtists.artists.map((artist: any) =>
+        spotifyApiRequest(
+          `/artists/${artist.id}/top-tracks?market=NL`,
+          "GET",
+          accessToken,
+        ),
+      );
+
+      const topTracksData = await Promise.all(topTracksPromises);
+
+      return topTracksData.flatMap((data: any) =>
+        data.tracks.map((track: any) => track.id),
+      );
+    } catch (error) {
+      console.error(`Error processing artists: ${artistIds}`, error);
+      return [];
+    }
+  };
+
+  // Fetch artist IDs from names
+  const artistIdPromises = artistNames.map(async (artistName) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/artist/${artistName}`,
@@ -75,46 +104,38 @@ export async function fetchRelevantTracks(
 
       if (!response.ok) {
         console.error(`Error fetching Spotify ID for artist: ${artistName}`);
-        return [];
+        return null;
       }
 
       const artistSpotifyID = await response.json();
       if (!artistSpotifyID) {
         console.warn(`No Spotify ID found for artist: ${artistName}`);
-        return [];
+        return null;
       }
 
-      const spotifyArtist = await spotifyApiRequest(
-        `/artists/${artistSpotifyID}`,
-        "GET",
-        accessToken,
-      );
-
-      const artistId = spotifyArtist?.id;
-      if (!artistId) {
-        console.warn(`No artist found for: ${artistName}`);
-        return [];
-      }
-
-      const topTracksData = await spotifyApiRequest(
-        `/artists/${artistId}/top-tracks?market=NL`,
-        "GET",
-        accessToken,
-      );
-
-      return topTracksData.tracks.map((track: any) => track.id);
+      return artistSpotifyID;
     } catch (error) {
       console.error(`Error processing artist: ${artistName}`, error);
-      return [];
+      return null;
     }
-  };
+  });
 
-  // Paralleliseer de artiestaanroepen
-  const results = await Promise.all(
-    artistNames.map((artistName) => fetchArtistTracks(artistName)),
+  const artistIds = (await Promise.all(artistIdPromises)).filter(
+    (id) => id !== null,
   );
 
-  // Combineer alle track-IDs
+  // Split artist IDs into batches of 50
+  const batches = [];
+  for (let i = 0; i < artistIds.length; i += 50) {
+    batches.push(artistIds.slice(i, i + 50));
+  }
+
+  // Fetch tracks for each batch of artist IDs
+  const results = await Promise.all(
+    batches.map((batch) => fetchArtistsTracks(batch)),
+  );
+
+  // Combine all track IDs
   results.forEach((artistTrackIds) => trackIds.push(...artistTrackIds));
 
   return trackIds;
@@ -181,8 +202,14 @@ export const generatePlaylist = async (
     await addTracksToPlaylist(playlist.id, trackIds, token);
 
     if (coverImage) {
-      const base64Image = await fetchImageAsBase64(coverImage);
-      await uploadPlaylistCoverImage(playlist.id, base64Image, token);
+      try {
+        const base64Image = await fetchImageAsBase64(coverImage);
+        await uploadPlaylistCoverImage(playlist.id, base64Image, token);
+      } catch (error) {
+        console.warn(
+          "Failed to upload custom cover image, using default image provided by Spotify.",
+        );
+      }
     }
 
     // Retourneer zowel de ID als de URI
