@@ -1,8 +1,10 @@
 "use server";
 
-import { fetchImageAsBase64 } from "@/lib/utils";
+import { fetchImageAsBase64, logger } from "@/lib/utils";
 
 const SPOTIFY_BASE_URL = "https://api.spotify.com/v1";
+
+const logger_api_key = process.env.LOGGER_API_KEY!;
 
 // Helper: Spotify API Request
 const spotifyApiRequest = async (
@@ -212,6 +214,13 @@ export const generatePlaylist = async (
       }
     }
 
+    await logger(
+      "success",
+      "Playlist created successfully",
+      "generatePlaylist",
+      logger_api_key,
+    );
+
     // Retourneer zowel de ID als de URI
     return {
       playlistId: playlist.id,
@@ -219,6 +228,13 @@ export const generatePlaylist = async (
     };
   } catch (error) {
     console.error("Fout bij het aanmaken van de playlist:", error);
+    await logger(
+      "failed",
+      "Error creating playlist",
+      "generatePlaylist",
+      logger_api_key,
+      (error as Error).message,
+    );
     throw error;
   }
 };

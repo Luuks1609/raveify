@@ -20,12 +20,15 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { useState, useEffect } from "react";
 import { SearchResultEvent } from "@/lib/types";
+import { RiLoader5Fill } from "@remixicon/react";
 
 export default function Searchbar() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResultEvent[]>();
   const debouncedSearchValue = useDebounce(query, 500);
   const [loading, setLoading] = useState(false);
+
+  const [itemPressed, setItemPressed] = useState(0);
 
   useEffect(() => {
     if (debouncedSearchValue) {
@@ -54,8 +57,6 @@ export default function Searchbar() {
       setLoading(false);
     }
   }
-
-  console.log(query);
 
   return (
     <>
@@ -106,9 +107,18 @@ export default function Searchbar() {
               {results && (
                 <CommandGroup heading="Search results">
                   {results.map((event) => (
-                    <a href={`/event/${event.url_extension}`} key={event.id}>
+                    <a
+                      href={`/event/${event.url_extension}`}
+                      key={event.id}
+                      onClick={() => setItemPressed(event.id)}
+                    >
                       <CommandItem>
-                        <CalendarHeart />
+                        {itemPressed === event.id ? (
+                          <RiLoader5Fill className="size-8 animate-spin" />
+                        ) : (
+                          <CalendarHeart />
+                        )}
+
                         <div>
                           <p className="text-md font-semibold text-white">
                             {event.name}{" "}

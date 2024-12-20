@@ -3,7 +3,7 @@ import { MaxWidthWrapper } from "@/components/MaxWidthWrapper";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Artist, Event } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
+import { APP_NAME, formatDate } from "@/lib/utils";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { Calendar, ChevronLeft, House, Pin } from "lucide-react";
@@ -122,7 +122,7 @@ export default async function EventPage({
         <div className="flex w-full justify-center">
           <CreatePlaylist
             name={data.name}
-            description={`Playlist by Raveify`}
+            description={`Playlist by ${APP_NAME}`}
             artistNames={artists_url_extensions}
             coverImage={data.photo}
           />
