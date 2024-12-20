@@ -4,10 +4,6 @@ import SpotifyProvider from "next-auth/providers/spotify";
 
 const scopes = [
   "user-read-email",
-  "playlist-read-private",
-  "playlist-read-collaborative",
-  "user-read-currently-playing",
-  "user-modify-playback-state",
   "ugc-image-upload",
   "playlist-modify-public",
   "playlist-modify-private",

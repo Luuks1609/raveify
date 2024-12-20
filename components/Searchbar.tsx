@@ -69,7 +69,7 @@ export default function Searchbar() {
               placeholder="What event are you looking for?"
             />
             {/* potential markup */}
-            <div className="mt-4 flex flex-wrap gap-3">
+            {/* <div className="mt-4 flex flex-wrap gap-3">
               <Badge className="w-fit" variant={"outline"}>
                 Rotterdam Rave - Winter Edition
               </Badge>
@@ -88,7 +88,7 @@ export default function Searchbar() {
               <Badge className="w-fit" variant={"outline"}>
                 Verknipt · NYE · Zaandam
               </Badge>
-            </div>
+            </div> */}
           </Command>
         </DialogTrigger>
         <DialogContent className="w-[90%] rounded-md p-0 md:w-full">
