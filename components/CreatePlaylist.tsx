@@ -79,7 +79,7 @@ export default function CreatePlaylist({
           Create playlist
         </Button>
       </DialogTrigger>
-      <DialogContent className="space-y-4">
+      <DialogContent className="w-[90%] space-y-4 rounded-md md:w-full">
         <DialogHeader>
           <DialogTitle>Create playlist</DialogTitle>
           <DialogDescription>

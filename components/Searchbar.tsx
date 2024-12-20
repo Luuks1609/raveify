@@ -21,6 +21,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useState, useEffect } from "react";
 import { SearchResultEvent } from "@/lib/types";
 import { RiLoader5Fill } from "@remixicon/react";
+import { Badge } from "./ui/badge";
 
 export default function Searchbar() {
   const [query, setQuery] = useState("");
@@ -64,10 +65,30 @@ export default function Searchbar() {
         <DialogTrigger asChild>
           <Command>
             <CommandInput
-              className=""
               readOnly
               placeholder="What event are you looking for?"
             />
+            {/* potential markup */}
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Badge className="w-fit" variant={"outline"}>
+                Rotterdam Rave - Winter Edition
+              </Badge>
+              <Badge className="w-fit" variant={"outline"}>
+                80's Verantwoord · Extra Gezellige Kersteditie
+              </Badge>
+              <Badge className="w-fit" variant={"outline"}>
+                Verknipt · NYE · Zaandam
+              </Badge>
+              <Badge className="w-fit" variant={"outline"}>
+                80's Verantwoord · Extra Gezellige Kersteditie
+              </Badge>
+              <Badge className="w-fit" variant={"outline"}>
+                Rotterdam Rave - Winter Edition
+              </Badge>
+              <Badge className="w-fit" variant={"outline"}>
+                Verknipt · NYE · Zaandam
+              </Badge>
+            </div>
           </Command>
         </DialogTrigger>
         <DialogContent className="w-[90%] rounded-md p-0 md:w-full">
