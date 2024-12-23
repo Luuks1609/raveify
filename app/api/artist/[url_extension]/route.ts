@@ -42,9 +42,12 @@ export async function GET(
 
     if (cachedData) {
       console.log("Serving from cache");
-      return NextResponse.json(cachedData, {
-        status: 200,
-      });
+      return NextResponse.json(
+        { spotifyId: cachedData },
+        {
+          status: 200,
+        },
+      );
     }
 
     const artistDetails = await fetch(
@@ -60,10 +63,18 @@ export async function GET(
 
     const data = await artistDetails.json();
     if (data && data.spotify) {
+      {
+        console.log(data.spotify);
+      }
       const spotifyId = data.spotify.split("/").pop();
-      await redis.set(cacheKey, JSON.stringify(spotifyId));
+      await redis.set(cacheKey, spotifyId);
       console.log("Serving from API and caching result");
-      return NextResponse.json(spotifyId);
+      return NextResponse.json(
+        { spotifyId },
+        {
+          status: 200,
+        },
+      );
     } else {
       return NextResponse.json(
         { error: "Spotify ID not found" },

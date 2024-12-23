@@ -13,19 +13,26 @@ const spotifyApiRequest = async (
   token: string,
   body: any = null,
 ) => {
-  const response = await fetch(`${SPOTIFY_BASE_URL}${url}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : null,
-  });
+  try {
+    const response = await fetch(`${SPOTIFY_BASE_URL}${url}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : null,
+    });
 
-  if (!response.ok) {
-    throw new Error(`Spotify API error: ${response.statusText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Spotify API error: ${errorText}`);
+      throw new Error(`Spotify API error: ${errorText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error in spotifyApiRequest:", error);
+    throw error;
   }
-  return await response.json();
 };
 
 export const uploadPlaylistCoverImage = async (
@@ -35,26 +42,37 @@ export const uploadPlaylistCoverImage = async (
 ) => {
   const url = `/playlists/${playlistId}/images`;
 
-  // Verstuur de Base64-afbeelding
-  const response = await fetch(`${SPOTIFY_BASE_URL}${url}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "image/jpeg", // Zorg dat de afbeelding een JPEG is
-    },
-    body: base64Image,
-  });
+  try {
+    const response = await fetch(`${SPOTIFY_BASE_URL}${url}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "image/jpeg",
+      },
+      body: base64Image,
+    });
 
-  if (!response.ok) {
-    throw new Error(
-      `Fout bij het uploaden van de playlist-afbeelding: ${response.statusText}`,
-    );
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error uploading playlist cover image: ${errorText}`);
+      throw new Error(
+        `Fout bij het uploaden van de playlist-afbeelding: ${errorText}`,
+      );
+    }
+  } catch (error) {
+    console.error("Error in uploadPlaylistCoverImage:", error);
+    throw error;
   }
 };
 
 export const fetchSpotifyUserId = async (token: string) => {
-  const response = await spotifyApiRequest("/me", "GET", token);
-  return response.id; // Return the user ID
+  try {
+    const response = await spotifyApiRequest("/me", "GET", token);
+    return response.id;
+  } catch (error) {
+    console.error("Error fetching Spotify user ID:", error);
+    throw error;
+  }
 };
 
 export async function fetchRelevantTracks(
@@ -63,23 +81,37 @@ export async function fetchRelevantTracks(
 ) {
   const trackIds: string[] = [];
 
-  // Helper om data voor meerdere artiesten op te halen
   const fetchArtistsTracks = async (artistIds: string[]) => {
+    if (artistIds.length === 0) {
+      console.warn("No artist IDs provided for fetching tracks.");
+      return [];
+    }
+
     try {
-      const ids = artistIds.join(",");
+      const ids = artistIds.join(","); // Directly join the string IDs
       const spotifyArtists = await spotifyApiRequest(
         `/artists?ids=${ids}`,
         "GET",
         accessToken,
       );
 
-      const topTracksPromises = spotifyArtists.artists.map((artist: any) =>
-        spotifyApiRequest(
-          `/artists/${artist.id}/top-tracks?market=NL`,
-          "GET",
-          accessToken,
-        ),
-      );
+      if (!spotifyArtists || !spotifyArtists.artists) {
+        console.error(
+          "Invalid response from Spotify API for artists:",
+          spotifyArtists,
+        );
+        return [];
+      }
+
+      const topTracksPromises = (spotifyArtists.artists || [])
+        .filter((artist: any) => artist && artist.id)
+        .map((artist: any) => {
+          return spotifyApiRequest(
+            `/artists/${artist.id}/top-tracks?market=NL`,
+            "GET",
+            accessToken,
+          );
+        });
 
       const topTracksData = await Promise.all(topTracksPromises);
 
@@ -87,12 +119,11 @@ export async function fetchRelevantTracks(
         data.tracks.map((track: any) => track.id),
       );
     } catch (error) {
-      console.error(`Error processing artists: ${artistIds}`, error);
+      console.error(`Error processing artists: ${artistIds.join(",")}`, error);
       return [];
     }
   };
 
-  // Fetch artist IDs from names
   const artistIdPromises = artistNames.map(async (artistName) => {
     try {
       const response = await fetch(
@@ -105,45 +136,45 @@ export async function fetchRelevantTracks(
       );
 
       if (!response.ok) {
-        console.error(`Error fetching Spotify ID for artist: ${artistName}`);
+        console.warn(
+          `Artist not found or fetch failed: ${artistName} (status: ${response.status})`,
+        );
         return null;
       }
 
       const artistSpotifyID = await response.json();
-      if (!artistSpotifyID) {
-        console.warn(`No Spotify ID found for artist: ${artistName}`);
-        return null;
-      }
-
+      console.log(
+        `Fetched Spotify ID for artist: ${artistName}`,
+        artistSpotifyID,
+      );
       return artistSpotifyID;
     } catch (error) {
-      console.error(`Error processing artist: ${artistName}`, error);
+      console.error(
+        `Error fetching Spotify ID for artist: ${artistName}`,
+        error,
+      );
       return null;
     }
   });
 
-  const artistIds = (await Promise.all(artistIdPromises)).filter(
-    (id) => id !== null,
-  );
+  const artistIds = (await Promise.all(artistIdPromises))
+    .filter((artist) => artist !== null)
+    .map((artist) => artist.spotifyId.split("?")[0]); // Remove possible query parameters
 
-  // Split artist IDs into batches of 50
   const batches = [];
   for (let i = 0; i < artistIds.length; i += 50) {
     batches.push(artistIds.slice(i, i + 50));
   }
 
-  // Fetch tracks for each batch of artist IDs
   const results = await Promise.all(
-    batches.map((batch) => fetchArtistsTracks(batch)),
+    batches.map((batch) => fetchArtistsTracks(batch)), // Pass string IDs only
   );
 
-  // Combine all track IDs
   results.forEach((artistTrackIds) => trackIds.push(...artistTrackIds));
 
   return trackIds;
 }
 
-// Playlist aanmaken
 export const createPlaylist = async (
   name: string,
   description: string,
@@ -155,16 +186,20 @@ export const createPlaylist = async (
     description,
     public: true,
   };
-  const playlist = await spotifyApiRequest(
-    `/users/${userId}/playlists`,
-    "POST",
-    token,
-    data,
-  );
-  return playlist;
+  try {
+    const playlist = await spotifyApiRequest(
+      `/users/${userId}/playlists`,
+      "POST",
+      token,
+      data,
+    );
+    return playlist;
+  } catch (error) {
+    console.error("Error creating playlist:", error);
+    throw error;
+  }
 };
 
-// Tracks toevoegen aan playlist
 export const addTracksToPlaylist = async (
   playlistId: string,
   trackIds: string[],
@@ -175,22 +210,29 @@ export const addTracksToPlaylist = async (
     return;
   }
 
-  // Splits track-IDs in batches of 100
   const batches = [];
   for (let i = 0; i < trackIds.length; i += 100) {
     batches.push(trackIds.slice(i, i + 100));
   }
 
-  // Add tracks per batch
   for (const batch of batches) {
     const uris = batch.map((id) => `spotify:track:${id}`);
-    await spotifyApiRequest(`/playlists/${playlistId}/tracks`, "POST", token, {
-      uris,
-    });
+    try {
+      await spotifyApiRequest(
+        `/playlists/${playlistId}/tracks`,
+        "POST",
+        token,
+        {
+          uris,
+        },
+      );
+    } catch (error) {
+      console.error("Error adding tracks to playlist:", error);
+      throw error;
+    }
   }
 };
 
-// Hoofdlogica om alles samen te brengen
 export const generatePlaylist = async (
   name: string,
   description: string,
@@ -221,13 +263,12 @@ export const generatePlaylist = async (
       logger_api_key,
     );
 
-    // Retourneer zowel de ID als de URI
     return {
       playlistId: playlist.id,
       playlistUri: playlist.uri,
     };
   } catch (error) {
-    console.error("Fout bij het aanmaken van de playlist:", error);
+    console.error("Error creating playlist:", error);
     await logger(
       "failed",
       "Error creating playlist",
