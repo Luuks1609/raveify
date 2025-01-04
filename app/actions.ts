@@ -258,7 +258,7 @@ export const generatePlaylist = async (
 
     await logger(
       "success",
-      "Playlist created successfully",
+      `Playlist for ${name} created successfully`,
       "generatePlaylist",
       logger_api_key,
     );
