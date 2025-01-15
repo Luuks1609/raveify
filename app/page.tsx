@@ -11,7 +11,7 @@ export default function Home() {
       </MaxWidthWrapper>
       <MaxWidthWrapper>
         <div className="flex h-20 items-center">
-          <div className="text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             <a href="/privacy-policy">privacy policy</a> -{" "}
             <a href="/user-agreement">user agreement</a>
           </div>
