@@ -21,7 +21,6 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useState, useEffect } from "react";
 import { SearchResultEvent } from "@/lib/types";
 import { RiLoader5Fill } from "@remixicon/react";
-import { Badge } from "./ui/badge";
 
 export default function Searchbar() {
   const [query, setQuery] = useState("");
@@ -74,7 +73,7 @@ export default function Searchbar() {
           <DialogTitle className="sr-only">Search Event</DialogTitle>
           <Command
             shouldFilter={false}
-            className=""
+            className="pl-3"
             filter={(value, search) => {
               const normalize = (str: string) =>
                 str
