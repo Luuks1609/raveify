@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { ReactNode } from "react";
 import { APP_NAME } from "@/lib/utils";
+import { ListMusic } from "lucide-react";
 
 interface Props {
   actionItem?: ReactNode;
@@ -25,7 +26,12 @@ function NavbarSkeleton({ actionItem }: Props) {
   return (
     <MaxWidthWrapper>
       <div className="flex h-20 w-full items-center justify-between">
-        <div className="">{actionItem ?? <a href="/">{APP_NAME}</a>}</div>
+        <a href="/" className="flex items-center gap-2 self-center font-medium">
+          <div className="flex h-6 w-6 items-center justify-center rounded bg-brand text-white">
+            <ListMusic className="size-4" />
+          </div>
+          {APP_NAME}
+        </a>
         <Skeleton className="size-10 rounded-full" />
       </div>
     </MaxWidthWrapper>
@@ -39,7 +45,15 @@ export default function Navbar({ actionItem }: Props) {
     return (
       <MaxWidthWrapper>
         <div className="flex h-20 w-full items-center justify-between">
-          <div className="">{actionItem ?? <a href="/">{APP_NAME}</a>}</div>
+          <a
+            href="/"
+            className="flex items-center gap-2 self-center font-medium"
+          >
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-brand text-white">
+              <ListMusic className="size-4" />
+            </div>
+            {APP_NAME}
+          </a>
 
           <DropdownMenu>
             <DropdownMenuTrigger>
