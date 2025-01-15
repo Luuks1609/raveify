@@ -15,11 +15,12 @@ export default function Page() {
           <section className="mb-4">
             <h2 className="text-xl font-semibold">Introduction</h2>
             <p>
-              Raveify ("we," "our," "us") respects your privacy and is committed
-              to protecting your personal information. This Privacy Policy
-              explains how we collect, use, and safeguard your information when
-              you use our services, including our website and applications
-              (collectively, the "Service").
+              Raveify (&quot;we,&quot; &quot;our,&quot; &quot;us&quot;) respects
+              your privacy and is committed to protecting your personal
+              information. This Privacy Policy explains how we collect, use, and
+              safeguard your information when you use our services, including
+              our website and applications (collectively, the
+              &quot;Service&quot;).
             </p>
             <p>
               By accessing or using the Service, you agree to the collection and
