@@ -63,9 +63,6 @@ export async function GET(
 
     const data = await artistDetails.json();
     if (data && data.spotify) {
-      {
-        console.log(data.spotify);
-      }
       const spotifyId = data.spotify.split("/").pop();
       await redis.set(cacheKey, spotifyId);
       console.log("Serving from API and caching result");

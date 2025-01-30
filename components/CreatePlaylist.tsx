@@ -17,9 +17,10 @@ import {
 } from "@/components/ui/dialog";
 import { getSession } from "next-auth/react";
 import { useState } from "react";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { RiLoader5Fill } from "@remixicon/react";
-import { URL } from "url";
+import { Label } from "./ui/label";
+import MultipleSelector from "./ui/multiselect";
 
 export default function CreatePlaylist({
   name,
@@ -35,6 +36,9 @@ export default function CreatePlaylist({
   const [loading, setLoading] = useState(false);
   const [playlistCreated, setPlaylistCreated] = useState(false);
   const [playlistUri, setPlaylistUri] = useState<string | null>(null);
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [excludedArtists, setExcludedArtists] = useState<string[]>([]);
 
   async function createPlaylist() {
     setLoading(true);
@@ -52,7 +56,15 @@ export default function CreatePlaylist({
     try {
       const userId = await fetchSpotifyUserId(accessToken);
 
-      const trackIds = await fetchRelevantTracks(accessToken, artistNames);
+      // Filter out the excluded artists
+      const filteredArtistNames = artistNames.filter(
+        (artist) => !excludedArtists.includes(artist),
+      );
+
+      const trackIds = await fetchRelevantTracks(
+        accessToken,
+        filteredArtistNames,
+      );
 
       const { playlistId, playlistUri } = await generatePlaylist(
         name,
@@ -126,15 +138,67 @@ export default function CreatePlaylist({
           )}
 
           {!playlistCreated && (
-            <Button
-              type="submit"
-              className="w-full"
-              variant={"brand"}
-              onClick={createPlaylist}
-              disabled={loading}
-            >
-              {loading ? "Creating..." : "Start creating playlist"}
-            </Button>
+            <div className="grid w-full gap-4 py-4">
+              <Button
+                type="submit"
+                className="w-full"
+                variant={"brand"}
+                onClick={createPlaylist}
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Start creating playlist"}
+              </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Advanced options
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+              >
+                Advanced Settings
+                {showAdvanced ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+
+              {showAdvanced && (
+                <div className="mt-4 space-y-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="excluded-artists">Exclude Artists</Label>
+                    <MultipleSelector
+                      commandProps={{
+                        label: "Select artists to exclude from the playlist",
+                      }}
+                      defaultOptions={artistNames.map((artist) => ({
+                        value: artist,
+                        label: artist,
+                      }))}
+                      placeholder="Select artists to exclude from the playlist"
+                      hideClearAllButton
+                      hidePlaceholderWhenSelected
+                      emptyIndicator={
+                        <p className="text-center text-sm">No results found</p>
+                      }
+                      onChange={(selected) =>
+                        setExcludedArtists(
+                          selected.map((option) => option.value),
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </DialogFooter>
       </DialogContent>
