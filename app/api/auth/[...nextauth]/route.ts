@@ -2,25 +2,6 @@ import NextAuth from "next-auth/next";
 import { type NextAuthOptions } from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
 
-const scopes = [
-  "user-read-email",
-  "ugc-image-upload",
-  "playlist-modify-public",
-  "playlist-modify-private",
-].join(" ");
-
-// Helper to ensure redirect_uri is valid and matches Spotify dashboard
-function getRedirectUri() {
-  // Use the environment variable as base, ensure no double slashes
-  let baseUrl = process.env.NEXTAUTH_URL || "";
-  // Remove trailing slash if present
-  if (baseUrl.endsWith("/")) {
-    baseUrl = baseUrl.slice(0, -1);
-  }
-  // The callback path should not have a double slash
-  return `${baseUrl}/api/auth/callback/spotify`;
-}
-
 async function refreshAccessToken(token: any) {
   const params = new URLSearchParams();
   params.append("grant_type", "refresh_token");
@@ -46,21 +27,19 @@ async function refreshAccessToken(token: any) {
   };
 }
 
-const redirectUri = getRedirectUri();
-
 const options: NextAuthOptions = {
   providers: [
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID || "",
       clientSecret: process.env.SPOTIFY_SECRET || "",
-      authorization: {
-        url: "https://accounts.spotify.com/authorize",
-        params: {
-          scope: scopes,
-          // Always provide a valid redirect_uri that matches Spotify dashboard
-          redirect_uri: redirectUri,
-        },
-      },
+      // authorization: {
+      //   url: "https://accounts.spotify.com/authorize",
+      //   params: {
+      //     scope: scopes,
+      //     // Always provide a valid redirect_uri that matches Spotify dashboard
+      //     redirect_uri: redirectUri,
+      //   },
+      // },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
