@@ -7,15 +7,7 @@ const scopes = [
   "ugc-image-upload",
   "playlist-modify-public",
   "playlist-modify-private",
-].join(",");
-
-const params = {
-  scope: scopes,
-};
-
-const LOGIN_URL =
-  "https://accounts.spotify.com/authorize?" +
-  new URLSearchParams(params).toString();
+].join(" ");
 
 async function refreshAccessToken(token: any) {
   const params = new URLSearchParams();
@@ -29,6 +21,7 @@ async function refreshAccessToken(token: any) {
         Buffer.from(
           process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_SECRET,
         ).toString("base64"),
+      "Content-Type": "application/x-www-form-urlencoded",
     },
     body: params,
   });
@@ -46,7 +39,15 @@ const options: NextAuthOptions = {
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID || "",
       clientSecret: process.env.SPOTIFY_SECRET || "",
-      authorization: LOGIN_URL,
+      authorization: {
+        url: "https://accounts.spotify.com/authorize",
+        params: {
+          scope: scopes,
+          redirect_uri: process.env.NEXTAUTH_URL
+            ? `${process.env.NEXTAUTH_URL}/api/auth/callback/spotify`
+            : undefined,
+        },
+      },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
