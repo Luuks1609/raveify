@@ -47,7 +47,6 @@ async function refreshAccessToken(token: any) {
 }
 
 const redirectUri = getRedirectUri();
-console.log("Spotify redirect_uri:", redirectUri);
 
 const options: NextAuthOptions = {
   providers: [
